@@ -1,7 +1,7 @@
 ---
 title: Materialize
 description:
-weight: 70
+weight: 40
 ---
 
 ### Command
@@ -16,6 +16,10 @@ Materialize is a low level vreplication API that allows for generalized material
 can be copies, aggregations or views. The target tables are kept in sync in near-realtime.
 
 You can specify multiple tables to materialize using the json_spec parameter.
+
+{{< warning >}}
+Be careful to avoid using the `INSTANT ADD COLUMN` feature in [MySQL 8.0+](https://mysqlserverteam.com/mysql-8-0-innodb-now-supports-instant-add-column/) and [MariaDB 10.3+](https://mariadb.com/kb/en/instant-add-column-for-innodb/) with materialization source tables as this can cause the vreplication based materialization workflow to break.
+{{< /warning >}}
 
 ### Parameters
 
@@ -43,12 +47,12 @@ cells should be used to pick a tablet for selecting data from the source keyspac
 <div class="cmd">
 
 A comma-separated list of tablet types that are used while picking a tablet for sourcing data.
-One or more from MASTER, REPLICA, RDONLY.<br><br>
+One or more from PRIMARY, REPLICA, RDONLY.<br><br>
 
 ###### Uses
 
-* To reduce the load on master tablets by using REPLICAs or RDONLYs
-* Reducing lags by pointing to MASTER
+* To reduce the load on PRIMARY tablets by using REPLICAs or RDONLYs
+* Reducing lag by pointing to PRIMARY
 </div>
 
 #### JSON spec details

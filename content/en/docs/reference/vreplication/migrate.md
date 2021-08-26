@@ -1,7 +1,7 @@
 ---
 title: Migrate
 description: Move tables from an external cluster
-weight: 12
+weight: 85
 ---
 ##### _Experimental_
 This documentation is for a new (v2) set of vtctld commands. See [RFC](https://github.com/vitessio/vitess/issues/7225) for more details.
@@ -9,7 +9,7 @@ This documentation is for a new (v2) set of vtctld commands. See [RFC](https://g
 ### Command
 
 ```
-Migrate  -v2 <options> <action> <workflow identifier>
+Migrate <options> <action> <workflow identifier>
 ```
 
 ### Description
@@ -55,7 +55,7 @@ All workflows are identified by `targetKeyspace.workflow` where `targetKeyspace`
 `Migrate -all -source ext1.load Create commerce.wf`
 1. Monitor the workflow using [Show](../show)<br/>
 `Workflow Show commerce.wf`
-1. Confirm that data has been copied over correctly using [VDiff](../../vdiff)
+1. Confirm that data has been copied over correctly using [VDiff](../vdiff)
 1. Cleanup vreplication artifacts and source tables with [Complete](../complete) <br/>
 `Migrate Complete commerce.wf`
 

@@ -6,8 +6,6 @@ aliases: ['/docs/user-guides/tablet-throttler/','/docs/reference/tablet-throttle
 
 VTTablet runs a cooperative throttling service. This service probes the shard's MySQL topology and observes health, measure by replication lag, or by another metric delivered by custom query, on servers. This throttler is derived from GitHub's [freno](https://github.com/github/freno).
 
-_Note: the Vitess documentation is transitioning from the term "Master" (with regard to MySQL replication) to "Primary". this document reflects this transition._
-
 ## Why throttler: maintaining shard health via low replication lag
 
 Vitess uses MySQL with asynchronous or semi-synchronous replication. In these modes, each shard has a primary instance that applies changes and logs them to the binary log. The replicas for that shard will get binary log entries from the primary, potentially acknowledge them (if semi-synchronous replication is enabled), and apply them. A running replica normally applies the entries as soon as possible, unless it is stopped or configured to delay. However, if the replica is busy, then it may not have the resources to apply events in a timely fashion, and can therefore start lagging. For example, if the replica is serving traffic, it may lack the necessary disk I/O or CPU to avoid lagging behind the primary.
@@ -59,6 +57,7 @@ The cluster's metric is only as accurate as the following metrics:
 - The aggregation interval
 
 The error margin equals approximately the sum of the above values, plus additional overhead. The defaults for these intervals are as follows:
+
 + Probe interval: `100ms`
 + Aggregation interval: `100ms`
 + Heartbeat interval: `250ms`

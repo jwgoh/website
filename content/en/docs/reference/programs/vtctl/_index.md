@@ -15,7 +15,7 @@ aliases: ['/docs/reference/vitess-api/','/docs/reference/vtctl/']
 | [InitTablet](../vtctl/tablets#inittablet) | `InitTablet [-allow_update] [-allow_different_shard] [-allow_master_override] [-parent] [-db_name_override=<db name>] [-hostname=<hostname>] [-mysql_port=<port>] [-port=<port>] [-grpc_port=<port>] [-tags=tag1:value1,tag2:value2] -keyspace=<keyspace> -shard=<shard> <tablet alias> <tablet type>` |
 | [GetTablet](../vtctl/tablets#gettablet) | `GetTablet <tablet alias>` |
 | [UpdateTabletAddrs](../vtctl/tablets#updatetabletaddrs) | `UpdateTabletAddrs [-hostname <hostname>] [-ip-addr <ip addr>] [-mysql-port <mysql port>] [-vt-port <vt port>] [-grpc-port <grpc port>] <tablet alias>` |
-| [DeleteTablet](../vtctl/tablets#deletetablet) | `DeleteTablet [-allow_master] <tablet alias> ...` |
+| [DeleteTablet](../vtctl/tablets#deletetablet) | `DeleteTablet [-allow_primary=false] <tablet alias> ...` |
 | [SetReadOnly](../vtctl/tablets#setreadonly) | `SetReadOnly <tablet alias>` |
 | [SetReadWrite](../vtctl/tablets#setreadwrite) | `SetReadWrite <tablet alias>` |
 | [StartReplication](../vtctl/tablets#startreplication) | `StartReplication <tablet alias>` |
@@ -31,7 +31,7 @@ aliases: ['/docs/reference/vitess-api/','/docs/reference/vtctl/']
 | [ExecuteFetchAsApp](../vtctl/tablets#executefetchasapp) | `ExecuteFetchAsApp [-max_rows=10000] [-json] [-use_pool] <tablet alias> <sql command>` |
 | [ExecuteFetchAsDba](../vtctl/tablets#executefetchasdba) | `ExecuteFetchAsDba [-max_rows=10000] [-disable_binlogs] [-json] <tablet alias> <sql command>` |
 | [VReplicationExec](../vtctl/tablets#vreplicationexec) | `VReplicationExec [-json] <tablet alias> <sql command>` |
-| [Backup](../vtctl/tablets#backup) | `Backup [-concurrency=4] [-allow_master=false] <tablet alias>` |
+| [Backup](../vtctl/tablets#backup) | `Backup [-concurrency=4] [-allow_primary=false] <tablet alias>` |
 | [RestoreFromBackup](../vtctl/tablets#restorefrombackup) | `RestoreFromBackup <tablet alias>` |
 | [ReparentTablet](../vtctl/tablets#reparenttablet) | `ReparentTablet <tablet alias>` |
 
@@ -44,7 +44,7 @@ aliases: ['/docs/reference/vitess-api/','/docs/reference/vtctl/']
 | [ValidateShard](../vtctl/shards#validateshard) | `ValidateShard [-ping-tablets] <keyspace/shard>` |
 | [ShardReplicationPositions](../vtctl/shards#shardreplicationpositions) | `ShardReplicationPositions <keyspace/shard>` |
 | [ListShardTablets](../vtctl/shards#listshardtablets) | `ListShardTablets <keyspace/shard>` |
-| [SetShardIsMasterServing](../vtctl/shards#setshardismasterserving) | `SetShardIsMasterServing <keyspace/shard> <is_master_serving>` |
+| [SetShardIsPrimaryServing](../vtctl/shards#setshardisprimaryserving) | `SetShardIsPrimaryServing <keyspace/shard> <is_serving>` |
 | [SetShardTabletControl](../vtctl/shards#setshardtabletcontrol) | `SetShardTabletControl [--cells=c1,c2,...] [--blacklisted_tables=t1,t2,...] [--remove] [--disable_query_service] <keyspace/shard> <tablet type>` |
 | [UpdateSrvKeyspacePartition](../vtctl/shards#updatesrvkeyspacepartition)| `UpdateSrvKeyspacePartition [--cells=c1,c2,...] [--remove] <keyspace/shard> <tablet type>` |
 | [SourceShardDelete](../vtctl/shards#sourcesharddelete) | `SourceShardDelete <keyspace/shard> <uid>` |
@@ -54,11 +54,11 @@ aliases: ['/docs/reference/vitess-api/','/docs/reference/vtctl/']
 | [RemoveShardCell](../vtctl/shards#removeshardcell) | `RemoveShardCell [-force] [-recursive] <keyspace/shard> <cell>` |
 | [DeleteShard](../vtctl/shards#deleteshard) | `DeleteShard [-recursive] [-even_if_serving] <keyspace/shard> ...` |
 | [ListBackups](../vtctl/shards#listbackups) | `ListBackups <keyspace/shard>` |
-| [BackupShard](../vtctl/shards#backupshard) | `BackupShard [-allow_master=false] <keyspace/shard>` |
+| [BackupShard](../vtctl/shards#backupshard) | `BackupShard [-allow_primary=false] <keyspace/shard>` |
 | [RemoveBackup](../vtctl/shards#removebackup) | `RemoveBackup <keyspace/shard> <backup name>` |
-| [InitShardMaster](../vtctl/shards#initshardmaster) | `InitShardMaster [-force] [-wait_replicas_timeout=<duration>] <keyspace/shard> <tablet alias>` |
-| [PlannedReparentShard](../vtctl/shards#plannedreparentshard) | `PlannedReparentShard -keyspace_shard=<keyspace/shard> [-new_master=<tablet alias>] [-avoid_master=<tablet alias>] [-wait_replicas_timeout=<duration>]` |
-| [EmergencyReparentShard](../vtctl/shards#emergencyreparentshard) | `EmergencyReparentShard -keyspace_shard=<keyspace/shard> -new_master=<tablet alias>` |
+| [InitShardPrimary](../vtctl/shards#initshardprimary) | `InitShardPrimary [-force] [-wait_replicas_timeout=<duration>] <keyspace/shard> <tablet alias>` |
+| [PlannedReparentShard](../vtctl/shards#plannedreparentshard) | `PlannedReparentShard -keyspace_shard=<keyspace/shard> [-new_primary=<tablet alias>] [-avoid_tablet=<tablet alias>] [-wait_replicas_timeout=<duration>]` |
+| [EmergencyReparentShard](../vtctl/shards#emergencyreparentshard) | `EmergencyReparentShard -keyspace_shard=<keyspace/shard> -new_primary=<tablet alias>` |
 | [TabletExternallyReparented](../vtctl/shards#tabletexternallyreparented) | `TabletExternallyReparented <tablet alias>` |
 | [GenerateShardRanges](../vtctl/shards#generateshardranges) | `GenerateShardRanges <num shards>` |
 
@@ -75,9 +75,11 @@ aliases: ['/docs/reference/vitess-api/','/docs/reference/vtctl/']
 | [SetKeyspaceServedFrom](../vtctl/keyspaces#setkeyspaceservedfrom) | `SetKeyspaceServedFrom  [-source=<source keyspace name>] [-remove] [-cells=c1,c2,...] <keyspace name> <tablet type>` |
 | [RebuildKeyspaceGraph](../vtctl/keyspaces#rebuildkeyspacegraph) | `RebuildKeyspaceGraph  [-cells=c1,c2,...] <keyspace> ...` |
 | [ValidateKeyspace](../vtctl/keyspaces#validatekeyspace) | `ValidateKeyspace  [-ping-tablets] <keyspace name>` |
-| [Reshard](../vtctl/keyspaces#reshard) | `Reshard  [-skip_schema_copy] <keyspace.workflow> <source_shards> <target_shards>` |
-| [MoveTables](../vtctl/keyspaces#movetables) | `MoveTables  [-cell=<cell>] [-tablet_types=<source_tablet_types>] -workflow=<workflow> <source_keyspace> <target_keyspace> <table_specs>` |
-| [DropSources](../vtctl/keyspaces#dropsources) | `DropSources  [-dry_run] <keyspace.workflow>` |
+| [Reshard (v1)](../../vreplication/v1/reshard) | `Reshard  -v1 [-skip_schema_copy] <keyspace.workflow> <source_shards> <target_shards>` |
+| [Reshard (v2)](../../vreplication/v2/reshard) | `Reshard <options> <action> <workflow identifier>` |
+| [MoveTables (v1)](../../vreplication/v1/movetables) | `MoveTables  -v1 [-cell=<cell>] [-tablet_types=<source_tablet_types>] -workflow=<workflow> <source_keyspace> <target_keyspace> <table_specs>` |
+| [MoveTables (v2)](../../vreplication/v2/movetables) | `MoveTables  <options> <action> <workflow identifier>` |
+| [DropSources](../../vreplication/v1/dropsources) | `DropSources  [-dry_run] <keyspace.workflow>` |
 | [CreateLookupVindex](../vtctl/keyspaces#createLookupvindex) | `CreateLookupVindex  [-cell=<cell>] [-tablet_types=<source_tablet_types>] <keyspace> <json_spec>` |
 | [ExternalizeVindex](../vtctl/keyspaces#externalizevindex) | `ExternalizeVindex  <keyspace>.<vindex>` |
 | [Materialize](../vtctl/keyspaces#materialize) | `Materialize  <json_spec>, example : '{"workflow": "aaa", "source_keyspace": "source", "target_keyspace": "target", "table_settings": [{"target_table": "customer", "source_expression": "select * from customer", "create_ddl": "copy"}]}'` |
@@ -86,8 +88,8 @@ aliases: ['/docs/reference/vitess-api/','/docs/reference/vtctl/']
 | [VDiff](../vtctl/keyspaces#VDiff) | `VDiff  [-source_cell=<cell>] [-target_cell=<cell>] [-tablet_types=replica] [-filtered_replication_wait_time=30s] <keyspace.workflow>` |
 | [MigrateServedTypes](../vtctl/keyspaces#migrateservedtypes) | `MigrateServedTypes  [-cells=c1,c2,...] [-reverse] [-skip-refresh-state] <keyspace/shard> <served tablet type>` |
 | [MigrateServedFrom](../vtctl/keyspaces#migrateservedfrom) | `MigrateServedFrom  [-cells=c1,c2,...] [-reverse] <destination keyspace/shard> <served tablet type>` |
-| [SwitchReads](../vtctl/keyspaces#switchreads) | `SwitchReads  [-cells=c1,c2,...] [-reverse] -tablet_type={replica|rdonly} [-dry-run] <keyspace.workflow>` |
-| [SwitchWrites](../vtctl/keyspaces#switchwrites) | `SwitchWrites  [-filtered_replication_wait_time=30s] [-cancel] [-reverse_replication=false] [-dry-run] <keyspace.workflow>` |
+| [SwitchReads](../../vreplication/v1/switchreads) | `SwitchReads  [-cells=c1,c2,...] [-reverse] -tablet_type={replica|rdonly} [-dry-run] <keyspace.workflow>` |
+| [SwitchWrites](../../vreplication/v1/switchwrites) | `SwitchWrites  [-filtered_replication_wait_time=30s] [-cancel] [-reverse_replication=false] [-dry-run] <keyspace.workflow>` |
 | [CancelResharding](../vtctl/keyspaces#cancelresharding) | `CancelResharding  <keyspace/shard>` |
 | [ShowResharding](../vtctl/keyspaces#showresharding) | `ShowResharding  <keyspace/shard>` |
 | [FindAllShardsInKeyspace](../vtctl/keyspaces#findallshardsinkeyspace) | `FindAllShardsInKeyspace  <keyspace>` |
@@ -108,8 +110,8 @@ aliases: ['/docs/reference/vitess-api/','/docs/reference/vtctl/']
 | :-------- | :--------------- |
 | [GetSchema](../vtctl/schema-version-permissions#getschema) | `GetSchema  [-tables=<table1>,<table2>,...] [-exclude_tables=<table1>,<table2>,...] [-include-views] <tablet alias>` |
 | [ReloadSchema](../vtctl/schema-version-permissions#reloadschema) | `ReloadSchema  <tablet alias>` |
-| [ReloadSchemaShard](../vtctl/schema-version-permissions#reloadschemashard) | `ReloadSchemaShard  [-concurrency=10] [-include_master=false] <keyspace/shard>` |
-| [ReloadSchemaKeyspace](../vtctl/schema-version-permissions#reloadschemakeyspace) | `ReloadSchemaKeyspace  [-concurrency=10] [-include_master=false] <keyspace>` |
+| [ReloadSchemaShard](../vtctl/schema-version-permissions#reloadschemashard) | `ReloadSchemaShard  [-concurrency=10] [-include_primary=false] <keyspace/shard>` |
+| [ReloadSchemaKeyspace](../vtctl/schema-version-permissions#reloadschemakeyspace) | `ReloadSchemaKeyspace  [-concurrency=10] [-include_primary=false] <keyspace>` |
 | [ValidateSchemaShard](../vtctl/schema-version-permissions#validateschemashard) | `ValidateSchemaShard  [-exclude_tables=''] [-include-views] <keyspace/shard>` |
 | [ValidateSchemaKeyspace](../vtctl/schema-version-permissions#validateschemakeyspace) | `ValidateSchemaKeyspace  [-exclude_tables=''] [-include-views] <keyspace name>` |
 | [ApplySchema](../vtctl/schema-version-permissions#applyschema) | `ApplySchema  [-allow_long_unavailability] [-wait_replicas_timeout=10s] {-sql=<sql> || -sql-file=<filename>} <keyspace>` |
@@ -271,7 +273,7 @@ The following global options apply to `vtctl`:
 | -grpc_server_initial_window_size | int | grpc server initial window size |
 | -grpc_server_keepalive_enforcement_policy_min_time | duration | grpc server minimum keepalive time (default 5m0s) |
 | -grpc_server_keepalive_enforcement_policy_permit_without_stream | | grpc server permit client keepalive pings even when there are no active streams (RPCs) |
-| -heartbeat_enable | | If true, vttablet records (if master) or checks (if replica) the current time of a replication heartbeat in the table _vt.heartbeat. The result is used to inform the serving state of the vttablet via healthchecks.|
+| -heartbeat_enable | | If true, vttablet records (if primary) or checks (if replica) the current time of a replication heartbeat in the table _vt.heartbeat. The result is used to inform the serving state of the vttablet via healthchecks.|
 |-heartbeat_interval | duration | How frequently to read and write replication heartbeat. (default 1s) |
 | -hot_row_protection_concurrent_transactions | int | Number of concurrent transactions let through to the txpool/MySQL for the same hot row. Should be > 1 to have enough 'ready' transactions in MySQL and benefit from a pipelining effect. (default 5) |
 | -hot_row_protection_max_global_queue_size | int | Global queue limit across all row (ranges). Useful to prevent that the queue can grow unbounded. (default 1000) |
@@ -286,7 +288,7 @@ The following global options apply to `vtctl`:
 | -log_err_stacks | | log stack traces for errors |
 | -log_rotate_max_size | uint | size in bytes at which logs are rotated (glog.MaxSize) (default 1887436800) |
 | -logtostderr | | log to standard error instead of files |
-| -master_connect_retry | duration | how long to wait in between replica reconnect attempts. Only precise to the second. (default 10s) |
+| -replication_connect_retry | duration | how long to wait in between replica reconnect attempts. Only precise to the second. (default 10s) |
 | -mem-profile-rate | int | profile every n bytes allocated (default 524288) |
 | -min_number_serving_vttablets | int | the minimum number of vttablets that will be continue to be used even with low replication lag (default 2) |
 | -mutex-profile-fraction | int | profile every n mutex contention events (see runtime.SetMutexProfileFraction) |
@@ -373,7 +375,7 @@ The following global options apply to `vtctl`:
 | -throttler_client_grpc_server_name | string | the server name to use to validate server certificate |
 | -throttler_client_protocol | string | the protocol to use to talk to the integrated throttler service (default "grpc") |
 | -topo_consul_watch_poll_duration | duration | time of the long poll for watch queries. (default 30s) |
-| -topo_etcd_lease_ttl | int | Lease TTL for locks and master election. The client will use KeepAlive to keep the lease going. (default 30) |
+| -topo_etcd_lease_ttl | int | Lease TTL for locks and leader election. The client will use KeepAlive to keep the lease going. (default 30) |
 | -topo_etcd_tls_ca | string | path to the ca to use to validate the server cert when connecting to the etcd topo server |
 | -topo_etcd_tls_cert | string | path to the client cert to use to connect to the etcd topo server, requires topo_etcd_tls_key, enables TLS |
 | -topo_etcd_tls_key | string | path to the client key to use to connect to the etcd topo server, enables TLS |

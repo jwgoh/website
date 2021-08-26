@@ -1,7 +1,7 @@
 ---
-title: ReverseTraffic
+title: --- ReverseTraffic
 description: Reverse traffic from target to source
-weight: 50
+weight: 33
 ---
 ##### _Experimental_
 This documentation is for a new (v2) set of vtctld commands. See [RFC](https://github.com/vitessio/vitess/issues/7225) for more details.
@@ -9,7 +9,7 @@ This documentation is for a new (v2) set of vtctld commands. See [RFC](https://g
 ### Command
 
 ```
-MoveTables/Reshard -v2 [-tablet_types <tablet_types_csv>] [-cells <cells>]
+MoveTables/Reshard [-tablet_types <tablet_types_csv>] [-cells <cells>]
   [-timeout=timeoutDuration] [-dry_run]
   ReverseTraffic <targetKs.workflow>
 ```
@@ -33,12 +33,12 @@ specified tablet types.
 
 #### -tablet_types
 **optional**\
-**default** all (replica,rdonly,master)
+**default** all (replica,rdonly,primary)
 
 <div class="cmd">
 
 A comma-separated list of tablet types for which traffic is to be reversed.
-One or more from master, replica, rdonly.<br><br>
+One or more from primary, replica, rdonly.<br><br>
 
 </div>
 
@@ -48,7 +48,7 @@ One or more from master, replica, rdonly.<br><br>
 
 <div class="cmd">
 
-For master tablets, ReverseTraffic first stops writes on the target master and waits for the replication to the source to
+For primary tablets, ReverseTraffic first stops writes on the target primary and waits for the replication to the source to
 catchup with the point where the writes were stopped. If the wait time is longer than timeout
 the command will error out. For setups with high write qps you may need to increase this value.
 

@@ -11,7 +11,7 @@ There was a time when sharding used to be a line that one should avoid crossing 
 
 * Smaller blast radius: If a shard goes down, the outage affects a smaller percentage of the users.
 * Improved resource utilization: It is difficult to pack large instances of servers efficiently across machines. It is much easier to utilize the capacity of the existing hardware if the shard sizes are relatively small. Orchestration systems like Kubernetes further facilitate such utilization.
-* Reduced contention: MySQL itself runs a lot better when instance sizes are small. There is less internal contention, replicas tend to keep up more easily with their master, etc.
+* Reduced contention: MySQL itself runs a lot better when instance sizes are small. There is less internal contention, replicas tend to keep up more easily with their primary, etc.
 * Improved maintenance: Operations like schema deployment can happen in parallel across all shards and finish much sooner than usual.
 
 There is a general worry that the complexity of deployment increases with the number of servers. However, this becomes a static cost once the necessary automation and monitoring is put in place.
@@ -40,13 +40,11 @@ The next criteria to take into account are joins. If you are performing joins ac
 
 ### Transactions
 
-It is important to keep transactions to be within one shard. Vitess currently does not guarantee atomicity for transactions that go across shards. Grouping related rows together usually results in transactions also falling within the same shard.
+It is important to keep transactions within a single shard whenever possible.
 
-But there are situations where this may not be possible. If so, you can see if it will be possible to avoid this problem by grouping data differently. However, this may not be possible either. A well known use case is one where customers send each other money.
+Grouping related rows together usually results in transactions also falling within the same shard, but there are situations where this may not be possible. For such use-cases, Vitess supports [configurable atomicity levels for transactions that go across shards](../../configuration-advanced/shard-isolation-atomicity).
 
-In such situations, you can look at refactoring the application such that transactions are broken into smaller single shard transactions.
-
-Vitess will be adding support for distributed transactions soon.
+In the cases where a cross-shard transaction simply cannot be avoided, the [usage of 2PC](../../../reference/features/two-phase-commit/) allows for atomic writes across shards in a single logical transaction.
 
 ### Large Tenants
 
